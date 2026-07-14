@@ -49,7 +49,7 @@ Here are some example questions you can ask:
 - **Quick Examples** - Click any example to see how it works
 - **Dashboard** - Beautiful charts appear automatically
 - ### Main Dashboard
-![Dashboard](<img width="674" height="320" alt="Screenshot 2026-07-14 222324" src="https://github.com/user-attachments/assets/d4b1899e-a868-48e9-bbd3-e0ff8287681a" />
+(<img width="674" height="320" alt="Screenshot 2026-07-14 222324" src="https://github.com/user-attachments/assets/d4b1899e-a868-48e9-bbd3-e0ff8287681a" />
 .png)
 
 ### 2. The Dashboard Shows You:
