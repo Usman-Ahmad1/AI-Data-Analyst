@@ -1,0 +1,14 @@
+# requirements.txt - ULTRA SIMPLE (pip will resolve)
+langchain
+langgraph
+langchain-groq
+langchain-community
+pandas
+plotly
+plotly-express
+streamlit
+sqlalchemy
+python-dotenv
+pydantic
+tabulate
+python-magic
