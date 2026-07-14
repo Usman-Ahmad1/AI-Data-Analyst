@@ -1,0 +1,327 @@
+﻿# app.py - Complete Working Version with Proper Visualizations
+# -*- coding: utf-8 -*-
+import sys
+import io
+import os
+from pathlib import Path
+
+# Force UTF-8 encoding
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
+# Add project root to Python path
+project_root = Path(__file__).parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.express as px
+from dotenv import load_dotenv
+import logging
+import traceback
+
+# Load environment variables
+load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Page configuration
+st.set_page_config(
+    page_title="AI Data Analyst",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Custom CSS for better display
+st.markdown("""
+    <style>
+    .main-header {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1E88E5;
+        padding-bottom: 1rem;
+    }
+    .sub-header {
+        font-size: 1.2rem;
+        color: #666;
+        padding-bottom: 1rem;
+    }
+    .result-box {
+        background-color: #f0f2f6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+    }
+    .chart-container {
+        padding: 1rem;
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin: 1rem 0;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Import after Streamlit setup
+try:
+    from src.core.graph import DataAnalystGraph
+except ImportError as e:
+    st.error(f"Failed to import required modules: {str(e)}")
+    st.info("Please ensure all source files are in the correct location.")
+    sys.exit(1)
+
+def initialize_analyst():
+    """Initialize the data analyst with credentials."""
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    db_path = os.getenv("DATABASE_PATH", "./data/chinook.db")
+    model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    
+    if not groq_api_key:
+        st.error("GROQ_API_KEY not found in environment variables")
+        st.info("Please add your GROQ_API_KEY to the .env file")
+        return None
+    
+    try:
+        return DataAnalystGraph(
+            groq_api_key=groq_api_key,
+            db_path=db_path,
+            model_name=model_name,
+            temperature=0.1
+        )
+    except Exception as e:
+        st.error(f"Failed to initialize data analyst: {str(e)}")
+        logger.error(f"Initialization error: {str(e)}")
+        return None
+
+def create_auto_chart(df: pd.DataFrame, question: str):
+    """Create an automatic chart from DataFrame."""
+    if df is None or df.empty:
+        return None
+    
+    try:
+        # Get numeric and categorical columns
+        numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
+        categorical_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+        
+        # Determine chart type based on data
+        if len(categorical_cols) >= 1 and len(numeric_cols) >= 1:
+            # Bar chart
+            if len(categorical_cols) == 1:
+                fig = px.bar(
+                    df,
+                    x=categorical_cols[0],
+                    y=numeric_cols[0] if numeric_cols else None,
+                    title=f"📊 {question[:50]}...",
+                    color=categorical_cols[0],
+                    barmode='group'
+                )
+            else:
+                # Multiple categories
+                fig = px.bar(
+                    df,
+                    x=categorical_cols[0],
+                    y=numeric_cols[0] if numeric_cols else None,
+                    title=f"📊 {question[:50]}...",
+                    color=categorical_cols[1] if len(categorical_cols) > 1 else None,
+                    barmode='group'
+                )
+        elif len(numeric_cols) >= 2:
+            # Line chart for time series or multiple numeric columns
+            fig = px.line(
+                df,
+                x=df.index,
+                y=numeric_cols[:2],
+                title=f"📈 {question[:50]}...",
+                markers=True
+            )
+        elif len(numeric_cols) == 1:
+            # Histogram
+            fig = px.histogram(
+                df,
+                x=numeric_cols[0],
+                title=f"📊 Distribution of {numeric_cols[0]}"
+            )
+        else:
+            # Default: simple bar chart with row counts
+            fig = px.bar(
+                df,
+                x=df.index,
+                y=df.columns[0],
+                title=f"📊 {question[:50]}..."
+            )
+        
+        # Update layout for better display
+        fig.update_layout(
+            height=500,
+            showlegend=True,
+            template='plotly_white'
+        )
+        
+        # Update axes labels
+        fig.update_xaxes(title_text="", tickangle=-45)
+        fig.update_yaxes(title_text="")
+        
+        return fig
+        
+    except Exception as e:
+        logger.error(f"Auto-chart creation failed: {str(e)}")
+        return None
+
+def display_chart(fig):
+    """Display a Plotly figure in Streamlit."""
+    if fig:
+        try:
+            st.plotly_chart(fig, use_container_width=True, config={
+                'displayModeBar': True,
+                'responsive': True
+            })
+            return True
+        except Exception as e:
+            st.warning(f"Could not display chart: {str(e)}")
+            return False
+    return False
+
+def main():
+    """Main application entry point."""
+    # Header
+    st.markdown('<div class="main-header">📊 AI Data Analyst</div>', 
+                unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">Ask questions about your data in natural language</div>', 
+                unsafe_allow_html=True)
+    
+    # Initialize session state
+    if 'analyst' not in st.session_state:
+        st.session_state.analyst = initialize_analyst()
+    
+    if 'messages' not in st.session_state:
+        st.session_state.messages = []
+    
+    if 'thread_id' not in st.session_state:
+        import uuid
+        st.session_state.thread_id = str(uuid.uuid4())
+    
+    # Sidebar
+    with st.sidebar:
+        st.header("💡 Quick Examples")
+        examples = [
+            "What are the top 5 best-selling products?",
+            "Show me revenue by country",
+            "Who are our most valuable customers?",
+            "What's the average invoice value?",
+            "Show me sales trends over time"
+        ]
+        
+        for example in examples:
+            if st.button(example, key=example[:20], use_container_width=True):
+                st.session_state.current_query = example
+        
+        st.divider()
+        st.subheader("📁 Session Info")
+        st.write(f"Thread ID: {st.session_state.thread_id[:8]}...")
+        st.write(f"Messages: {len(st.session_state.messages)}")
+        
+        if st.button("🔄 New Session", use_container_width=True):
+            import uuid
+            st.session_state.thread_id = str(uuid.uuid4())
+            st.session_state.messages = []
+            st.rerun()
+    
+    # Chat input
+    query = st.chat_input("Ask me anything about your data...")
+    
+    # Use example query if set
+    if 'current_query' in st.session_state:
+        query = st.session_state.current_query
+        del st.session_state.current_query
+    
+    if query:
+        # Add user message
+        st.session_state.messages.append({"role": "user", "content": query})
+        
+        with st.chat_message("user"):
+            st.write(query)
+        
+        # Process query
+        with st.chat_message("assistant"):
+            with st.spinner("🤔 Analyzing your question..."):
+                try:
+                    # Run the analysis
+                    result = st.session_state.analyst.run(
+                        query, 
+                        thread_id=st.session_state.thread_id
+                    )
+                    
+                    # Display response
+                    if result.get('error'):
+                        st.error(f"Error: {result['error']}")
+                    else:
+                        # Show SQL if generated
+                        if result.get('sql_query'):
+                            with st.expander("📝 SQL Query"):
+                                st.code(result['sql_query'], language='sql')
+                        
+                        # Show the answer
+                        st.markdown("### 📊 Analysis Result")
+                        st.markdown(result['answer'])
+                        
+                        # Get data for visualization
+                        df = result.get('dataframe')
+                        chart_displayed = False
+                        
+                        # Try to display chart from the graph
+                        chart_html = result.get('chart_html')
+                        if chart_html:
+                            try:
+                                st.markdown("### 📈 Visualization")
+                                st.components.v1.html(chart_html, height=600)
+                                chart_displayed = True
+                                st.caption("Interactive chart - hover for details")
+                            except Exception as e:
+                                logger.warning(f"Chart HTML display failed: {str(e)}")
+                        
+                        # If no chart from graph, create auto-chart
+                        if not chart_displayed and df is not None and not df.empty:
+                            st.markdown("### 📈 Visualization")
+                            fig = create_auto_chart(df, query)
+                            if fig and display_chart(fig):
+                                chart_displayed = True
+                                st.caption("Auto-generated chart from your data")
+                            else:
+                                st.info("No visual chart available for this data")
+                        
+                        # If still no chart, show data preview only
+                        if not chart_displayed:
+                            if df is not None and not df.empty:
+                                st.markdown("### 📊 Data Overview")
+                                st.dataframe(df)
+                                st.caption(f"Total rows: {len(df)}")
+                            elif result.get('dataframe_data'):
+                                data = result.get('dataframe_data', [])
+                                columns = result.get('dataframe_columns', [])
+                                if data and columns:
+                                    df = pd.DataFrame(data, columns=columns)
+                                    st.markdown("### 📊 Data Overview")
+                                    st.dataframe(df)
+                                    st.caption(f"Total rows: {len(df)}")
+                    
+                    # Add assistant response to history
+                    st.session_state.messages.append({
+                        "role": "assistant", 
+                        "content": result.get('answer', 'No response generated')
+                    })
+                    
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
+                    logger.error(f"Processing error: {str(e)}")
+                    logger.error(traceback.format_exc())
+
+if __name__ == "__main__":
+    main()
