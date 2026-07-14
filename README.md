@@ -42,12 +42,15 @@ Here are some example questions you can ask:
 
 ---
 
-## 🖥️ What Does It Look Like?
+## 🖥️ Overview:
 
 ### 1. The Main Screen
 - **Chat Box** - Type your question here (like talking to ChatGPT)
 - **Quick Examples** - Click any example to see how it works
 - **Dashboard** - Beautiful charts appear automatically
+- ### Main Dashboard
+![Dashboard](<img width="674" height="320" alt="Screenshot 2026-07-14 222324" src="https://github.com/user-attachments/assets/d4b1899e-a868-48e9-bbd3-e0ff8287681a" />
+.png)
 
 ### 2. The Dashboard Shows You:
 - 📊 **Interactive Charts** - Hover, zoom, click to explore
