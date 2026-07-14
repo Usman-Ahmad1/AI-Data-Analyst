@@ -1,0 +1,14 @@
+# .streamlit/config.toml
+[theme]
+base = "light"
+
+[server]
+enableCORS = true
+enableXsrfProtection = true
+maxUploadSize = 200
+
+[browser]
+gatherUsageStats = false
+
+[runner]
+magicEnabled = false
