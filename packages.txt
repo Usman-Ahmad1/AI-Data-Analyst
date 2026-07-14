@@ -1,0 +1,5 @@
+# packages.txt
+gcc
+g++
+make
+python3-dev
