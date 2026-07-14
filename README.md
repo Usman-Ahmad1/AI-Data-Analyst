@@ -49,7 +49,7 @@ Here are some example questions you can ask:
 - **Quick Examples** - Click any example to see how it works
 - **Dashboard** - Beautiful charts appear automatically
 - ### Main Dashboard
-(<img width="674" height="320" alt="Screenshot 2026-07-14 222324" src="https://github.com/user-attachments/assets/d4b1899e-a868-48e9-bbd3-e0ff8287681a" />)
+<img width="674" height="320" alt="Screenshot 2026-07-14 222324" src="https://github.com/user-attachments/assets/d4b1899e-a868-48e9-bbd3-e0ff8287681a" />
 
 ### 2. The Dashboard Shows You:
 - 📊 **Interactive Charts** - Hover, zoom, click to explore
@@ -57,11 +57,19 @@ Here are some example questions you can ask:
 - 📋 **Data Preview** - See the actual data behind the charts
 - 📊 **Key Metrics** - Important numbers at a glance
 
+- <img width="456" height="264" alt="Screenshot 2026-07-14 222428" src="https://github.com/user-attachments/assets/560ab93e-0842-42a1-b221-78ef29b1208e" />
+
+
 ### 3. Interactive Charts You Can:
 - 🖱️ **Hover** to see exact values
 - 🔍 **Zoom** in/out to focus on specific areas
 - 📥 **Download** charts as images
 - 🔄 **Pan** to explore different parts of the data
+
+
+### Automatic Analysis:
+- <img width="526" height="257" alt="Screenshot 2026-07-14 222405" src="https://github.com/user-attachments/assets/e6b57eab-4b35-47e0-92d3-3061773bf022" />
+
 
 ---
 
