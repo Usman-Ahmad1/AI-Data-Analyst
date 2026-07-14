@@ -1,0 +1,28 @@
+# requirements.txt
+langchain==0.1.0
+langgraph==0.0.20
+langchain-groq==0.1.0
+langchain-community==0.1.0
+pandas==2.1.4
+plotly==5.18.0
+streamlit==1.29.0
+sqlalchemy==2.0.25
+python-dotenv==1.0.0
+pydantic==2.5.2
+tabulate==0.9.0
+python-magic==0.4.27
+
+# requirements.txt - Flexible Versions
+langchain
+langgraph
+langchain-groq
+langchain-community
+pandas
+plotly
+plotly-express
+streamlit
+sqlalchemy
+python-dotenv
+pydantic
+tabulate
+python-magic
